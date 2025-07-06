@@ -1,0 +1,30 @@
+<%- include('partials/navbar', { page: '/solutions/projects' }) %>
+<section class="hero">
+  <h1>Projects</h1>
+</section>
+
+<div>
+  <a href="/solutions/projects?sector=Industry" class="btn">Industry</a>
+  <a href="/solutions/projects?sector=Transportation" class="btn">Transportation</a>
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Title</th>
+      <th>Sector</th>
+      <th>Summary</th>
+      <th>Details</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% projects.forEach(project => { %>
+      <tr>
+        <td><%= project.title %></td>
+        <td><a href="/solutions/projects?sector=<%= project.sector %>" class="btn"><%= project.sector %></a></td>
+        <td><%= project.summary_short %></td>
+        <td><a href="/solutions/projects/<%= project.id %>" class="btn">Details</a></td>
+      </tr>
+    <% }); %>
+  </tbody>
+</table>

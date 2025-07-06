@@ -1,72 +1,72 @@
 /********************************************************************************
-*  WEB322 – Assignment 03
-* 
-*  I declare that this assignment is my own work in accordance with Seneca's
-*  Academic Integrity Policy:
-*  https://www.senecacollege.ca/about/policies/academic-integrity-policy.html
-* 
-*  Name: Amisa Ojha       Student ID: 148425234        Date: 2025-06-15
+* WEB322 – Assignment 04
 *
-*  Published URL: ___________________________________________________________
+* I declare that this assignment is my own work in accordance with Seneca's
+* Academic Integrity Policy:
+*
+* https://www.senecapolytechnic.ca/about/policies/academic-integrity-policy.html
+*
+* Name: Amisa Ojha    Student ID:  148425234   Date: 2025-07-06
+*
+* 
+*
 ********************************************************************************/
 
 const express = require("express");
 const path = require("path");
-const data = require("./modules/project");
-
 const app = express();
-const HTTP_PORT = process.env.PORT || 8080;
+const fs = require("fs");
 
-// Static files
+const PORT = process.env.PORT || 8080;
+
+
+let projects = [];
+try {
+  projects = JSON.parse(fs.readFileSync(path.join(__dirname, "data", "projects.json")));
+} catch (err) {
+  console.error("Failed to load projects.json");
+}
+
+
 app.use(express.static("public"));
+app.set("view engine", "ejs");
+app.set("views", __dirname + "/views");
 
-// Initialize data before setting up routes
-data.initialize()
-  .then(() => {
-    // Routes
-    app.get("/", (req, res) => {
-      res.sendFile(path.join(__dirname, "views/home.html"));
-    });
+// Routes
+app.get("/", (req, res) => {
+  res.render("index", { page: "/" });
+});
 
-    app.get("/about", (req, res) => {
-      res.sendFile(path.join(__dirname, "views/about.html"));
-    });
+app.get("/about", (req, res) => {
+  res.render("about", { page: "/about" });
+});
 
-    app.get("/solutions/projects", async (req, res) => {
-      try {
-        const sector = req.query.sector;
-        let projects;
+app.get("/solutions/projects", (req, res) => {
+  const sector = req.query.sector;
+  let filteredProjects = projects;
 
-        if (sector) {
-          projects = await data.getProjectsBySector(sector);
-        } else {
-          projects = await data.getAllProjects();
-        }
-        res.json(projects);
-      } catch (err) {
-        res.status(404).json({ message: err });
-      }
-    });
+  if (sector) {
+    filteredProjects = projects.filter(p => p.sector === sector);
+    if (filteredProjects.length === 0) {
+      return res.status(404).render("404", { message: "No projects found for sector: " + sector });
+    }
+  }
 
-    app.get("/solutions/projects/:id", async (req, res) => {
-      try {
-        const project = await data.getProjectById(parseInt(req.params.id));
-        res.json(project);
-      } catch (err) {
-        res.status(404).json({ message: err });
-      }
-    });
+  res.render("projects", { page: "/solutions/projects", projects: filteredProjects });
+});
 
-    // Custom 404
-    app.use((req, res) => {
-      res.status(404).sendFile(path.join(__dirname, "views/404.html"));
-    });
+app.get("/solutions/projects/:id", (req, res) => {
+  const project = projects.find(p => p.id == req.params.id);
+  if (!project) {
+    return res.status(404).render("404", { message: "No project found with ID: " + req.params.id });
+  }
 
-    // Start server
-    app.listen(HTTP_PORT, () => {
-      console.log(`Server running on port ${HTTP_PORT}`);
-    });
-  })
-  .catch(err => {
-    console.error("Failed to initialize project data:", err);
-  });
+  res.render("project", { project });
+});
+
+
+app.use((req, res) => {
+  res.status(404).render("404", { message: "Sorry, the page you are looking for doesn't exist." });
+});
+
+app.listen(PORT, () => console.log("Server running on port " + PORT));

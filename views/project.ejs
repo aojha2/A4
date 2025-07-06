@@ -1,0 +1,25 @@
+<%- include('partials/navbar', { page: '' }) %>
+<section class="hero">
+  <h1><%= project.title %></h1>
+  <p>Below, you will find detailed information about the project: <%= project.title %></p>
+</section>
+
+<img src="<%= project.feature_img_url %>" alt="Project Image">
+<p><%= project.intro_short %></p>
+<p><strong>Impact:</strong> <%= project.impact %></p>
+<a href="<%= project.original_source_url %>" class="btn">More Info</a>
+
+<div id="quoteContainer"></div>
+
+<a href="#" onclick="history.back(); return false;" class="btn">Back</a>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  fetch("https://dummyjson.com/quotes/random")
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById("quoteContainer").innerHTML = 
+        `<blockquote>"${data.quote}" - ${data.author}</blockquote>`;
+    });
+});
+</script>
